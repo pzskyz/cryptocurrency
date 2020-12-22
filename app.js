@@ -7,6 +7,7 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const BlockChain = require('./blockchain');
+const P2PServer = require('./p2pserver')
 
 var app = express();
 
@@ -24,6 +25,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // app.use('/users', usersRouter);
 
 const bc = new BlockChain();
+const p2p = new P2PServer(bc);
+
+p2p.listen()
 
 app.get('/blocks', (req, res) => {
   res.json(bc.chain)
@@ -32,6 +36,7 @@ app.get('/blocks', (req, res) => {
 app.post('/mine', (req, res) => {
   const data = req.body.data
   const block = bc.addBlock(data)
+  p2p.syncChain()
   console.log(`new block: ${block}`)
   res.redirect(`/blocks`);
 })
