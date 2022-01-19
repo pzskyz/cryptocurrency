@@ -2,7 +2,13 @@ const SHA256 = require('crypto-js/sha256')
 const DIFFICULTY = 4
 const BLOCKTIME = 5000
 
-class Block {
+export default class Block {
+    timestamp: any;
+    lastHash: any;
+    nonce: any;
+    difficulty: any;
+    hash: any;
+    data: any;
 
     static genesisBlock() {
         return new Block(new Date(), '', 'fdaifjdsifj', '', '', 2)
@@ -34,7 +40,7 @@ class Block {
         let difficulty = lastBlock.difficulty
         do {
             timestamp = Date.now()
-            nonce ++;
+            nonce++;
             difficulty = Block.adjustDificulty(lastBlock, timestamp) || 1
             hash = SHA256(`${timestamp}${lastBlock.hash}${JSON.stringify(data)}${nonce}${difficulty}`).toString()
         } while (hash.substr(0, difficulty) !== '0'.repeat(difficulty))
@@ -46,16 +52,13 @@ class Block {
         return (lastBlock.timestamp + BLOCKTIME) > timestamp ? (lastBlock.difficulty + 1) : (lastBlock.difficulty - 1)
     }
 
-    static hash(timestamp, lastHash, data) {
+    static hashFn(timestamp, lastHash, data, nonce, difficulty) {
         return SHA256(`${timestamp}${lastHash}${JSON.stringify(data)}${nonce}${difficulty}`).toString()
     }
 
-    static blockHash(block) {
-        const { timestamp, lastHash, data } = block
+    static blockHash(block: Block) {
+        const { timestamp, lastHash, data, nonce, difficulty } = block
 
-        return Block.hash(timestamp, lastHash, data)
+        return Block.hashFn(timestamp, lastHash, data, nonce, difficulty)
     }
 }
-
-
-module.exports = Block;

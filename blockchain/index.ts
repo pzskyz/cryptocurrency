@@ -1,6 +1,7 @@
-const Block = require("./block")
+import Block from "../block";
 
 class BlockChain {
+    chain: Block[];
 
 
     constructor() {
@@ -24,7 +25,7 @@ class BlockChain {
         `
     }
 
-    isValid(chain) {
+    isValid(chain: Block[]) {
         if (JSON.stringify(chain[0]) !== JSON.stringify(Block.genesisBlock)) {
             return false
         }
@@ -38,7 +39,7 @@ class BlockChain {
         return true
     }
 
-    replace(newChain) {
+    replace(newChain: Block[]) {
         if (newChain.length <= this.chain.length) {
             console.log('new chain qua ngan')
             return
