@@ -1,3 +1,4 @@
 const INITIAL_BALANCE = 500;
+const MINING_REWARD = 50;
 
-module.exports = { INITIAL_BALANCE }
+module.exports = { INITIAL_BALANCE, MINING_REWARD }

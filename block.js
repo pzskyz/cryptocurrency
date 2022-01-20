@@ -6,7 +6,7 @@ const BLOCKTIME = 5000
 class Block {
 
     static genesisBlock() {
-        return new Block(new Date(), '', 'fdaifjdsifj', '', '', 2)
+        return new Block(new Date(), '', 'fdaifjdsifj', [], '', 2)
     }
 
     constructor(timestamp, lastHash, hash, data, nonce, difficulty) {

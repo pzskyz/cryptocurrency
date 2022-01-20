@@ -2,11 +2,17 @@ const ws = require('ws')
 
 const P2P_PORT = process.env.P2PPORT || 5001
 const peers = process.env.PEERS ? process.env.PEERS.split(',') : []
+const MESSAGE_TYPES = {
+    chain: 'CHAIN',
+    transaction: 'TRANSACTION',
+    clear_transactions: 'CLEAR_TRANSACTIONS'
+}
 
 class P2PServer {
-    constructor(bc) {
+    constructor(bc, tp) {
         this.sockets = []
         this.blockChain = bc
+        this.transactionPool = tp;
     }
 
     listen() {
@@ -31,13 +37,25 @@ class P2PServer {
     }
 
     sendChain(socket) {
-        socket.send(JSON.stringify(this.blockChain.chain))
+        socket.send(JSON.stringify({
+            type: MESSAGE_TYPES.chain,
+            chain: this.blockChain.chain
+        }))
     }
 
     messageHandler(socket) {
-        socket.on('message', (data) => {
-            const receivedChain = JSON.parse(data)
-            this.blockChain.replace(receivedChain)
+        socket.on('message', (message) => {
+            const data = JSON.parse(message)
+            switch (data.type) {
+                case MESSAGE_TYPES.chain:
+                    this.blockChain.replace(data.chain); break;
+                case MESSAGE_TYPES.transaction:
+                    this.transactionPool.updateOrAddTransaction(data.transaction);
+                    break;
+                case MESSAGE_TYPES.clear_transactions:
+                    this.transactionPool.clear();
+                    break;
+            }
         })
     }
 
@@ -50,10 +68,25 @@ class P2PServer {
         })
     }
 
-    syncChain() {
+    syncChains() {
         this.sockets.forEach(s => {
             this.sendChain(s)
         })
+    }
+
+    sendTransaction(socket, transaction) {
+        socket.send(JSON.stringify({
+            type: MESSAGE_TYPES.transaction,
+            transaction: transaction
+        }));
+    }
+
+    broadcastTransaction(transaction) {
+        this.sockets.forEach(socket => this.sendTransaction(socket, transaction))
+    }
+
+    broadcastClearTransactions() {
+        this.sockets.forEach(socket => socket.send(JSON.stringify({ type: MESSAGE_TYPES.clear_transactions })))
     }
 }
 
